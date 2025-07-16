@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Data Usaha Tlogomas - RW 6 dan RW 7</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Bootstrap & Icons -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar-custom {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background-color: #f3e8ff;
+      border-bottom: 1px solid #d8b9f2;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-left img {
+      height: 60px;
+      margin-right: 15px;
+    }
+
+    .navbar-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #6f42c1;
+    }
+
+    .navbar-title small {
+      display: block;
+      font-size: 14px;
+      color: #8c5fc2;
+    }
+
+    .navbar-right a {
+      margin: 5px;
+      font-weight: 500;
+      color: #6f42c1;
+      border-radius: 8px;
+      border: 1px solid #6f42c1;
+      padding: 8px 15px;
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    .navbar-right a:hover,
+    .navbar-right a.active {
+      background-color: #6f42c1;
+      color: white;
+    }
+
+    .btn-purple {
+      background-color: #6f42c1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-purple:hover {
+      background-color: #5a379e;
+      color: #fff;
+    }
+
+    .footer {
+      position: sticky;
+      bottom: 0;
+      background-color: #f3e8ff;
+      text-align: center;
+      padding: 12px 15px;
+      font-size: 14px;
+      color: #555;
+      border-top: 1px solid #d8b9f2;
+      z-index: 998;
+    }
+
+    .card {
+      border-radius: 12px;
+    }
+
+    table th, table td {
+      vertical-align: middle !important;
+      font-size: 13px;
+    }
+
+    .table-responsive {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .summary-box {
+      border-radius: 12px;
+      padding: 20px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .summary-total { background-color: #3498db; }
+    .summary-kategori { background-color: #2ecc71; }
+    .summary-status { background-color: #f39c12; }
+
+    .legend-color {
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+      border: 1px solid #000;
+      border-radius: 3px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="navbar-custom">
+  <div class="navbar-left">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+    <div class="navbar-title">
+      Kelurahan Tlogomas
+      <small>Kecamatan Lowokwaru</small>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <a href="{{ url_for('home') }}" class="{% if request.path == '/' %}active{% endif %}">
+      <i class="bi bi-house-door"></i> Beranda
+    </a>
+    <a href="{{ url_for('profil') }}" class="{% if request.path.startswith('/profil') %}active{% endif %}">
+      <i class="bi bi-person-circle"></i> Profil
+    </a>
+    <a href="{{ url_for('data_usaha') }}" class="{% if request.path.startswith('/detail-data') %}active{% endif %}">
+      <i class="bi bi-table"></i> Data
+    </a>
+    <a href="{{ url_for('dashboard') }}" class="{% if request.path.startswith('/dashboard') %}active{% endif %}">
+      <i class="bi bi-bar-chart-line"></i> Dashboard
+    </a>
+  </div>
+</div>
+
+<!-- Konten -->
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Dashboard Data Usaha Tlogomas (RW 6 dan 7)</h2>
+
+  <!-- Filter Form -->
+  <form method="POST" class="p-3 bg-white rounded shadow-sm mb-4">
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Kategori Lapangan Usaha</label>
+        <select name="kategori" class="form-control">
+          <option value="ALL">Semua Kategori</option>
+          {% for kat in list_kategori %}
+            <option value="{{ kat }}" {% if kat == kategori %}selected{% endif %}>{{ kat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label>RT</label>
+        <select name="rt" class="form-control">
+          <option value="ALL">Semua RT</option>
+          {% for r in list_rt %}
+            <option value="{{ r }}" {% if r == rt %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label>RW</label>
+        <select name="rw" class="form-control">
+          <option value="ALL">Semua RW</option>
+          {% for r in list_rw %}
+            <option value="{{ r }}" {% if r == rw %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="d-flex justify-content-start flex-wrap">
+      <button type="submit" class="btn btn-primary">Tampilkan Data</button>
+    </div>
+  </form>
+
+  {% if df_filtered is not none and not df_filtered.empty %}
+  <!-- Ringkasan -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="summary-box summary-total">
+        <h5>Total Usaha</h5>
+        <h2>{{ total_usaha }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="summary-box summary-kategori">
+        <h5>Potensi Usaha Terbanyak</h5>
+        <h6>{{ kategori_terbanyak }}</h6>
+        <small>{{ jumlah_kategori_terbanyak }} usaha</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="summary-box summary-status">
+        <h5>Status Gabungan Usaha</h5>
+        Gabung: {{ jumlah_gabung }}<br>
+        Independen: {{ jumlah_independen }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabel -->
+  <div class="card p-3">
+    <h5 class="mb-3">Data Usaha (Filter)</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-sm">
+        <thead class="thead-dark">
+          <tr>
+            <th>ID</th>
+            <th>Nama Usaha</th>
+            <th>RT</th>
+            <th>RW</th>
+            <th>Alamat</th>
+            <th>Deskripsi Aktifitas</th>
+            <th>Status Bangunan Usaha</th>
+            <th>Kategori Lapangan Usaha</th>
+            <th>No. Handphone</th>
+            <th>Catatan (Lantai/Blok/Sektor)</th>
+            <th>Status Gabungan</th>
+            <th>Jenis Usaha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i, row in df_filtered.iterrows() %}
+          <tr>
+            <td>{{ row['ID'] }}</td>
+            <td>{{ row['Nama Usaha'] }}</td>
+            <td>{{ row['RT'] }}</td>
+            <td>{{ row['RW'] }}</td>
+            <td>{{ row['Alamat'] }}</td>
+            <td>{{ row['Deskripsi Aktifitas'] }}</td>
+            <td>{{ row['Status Bangunan Usaha'] }}</td>
+            <td>{{ row['Kategori Lapangan Usaha'] }}</td>
+            <td>{{ row['No. Handphone'] }}</td>
+            <td>{{ row['Catatan (Lantai/Blok/Sektor)'] }}</td>
+            <td>{{ row['Status Gabungan'] }}</td>
+            <td>{{ row['Jenis Usaha'] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Peta -->
+  {% if plot_url %}
+  <div class="card p-3 mt-4 shadow-sm">
+    <h5 class="mb-3">Peta Persebaran Usaha Berdasarkan Kategori</h5>
+    <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded mb-3" alt="Plot Persebaran Kategori">
+    {% if kategori_colors %}
+    <div class="mt-2 pt-2 border-top">
+      <h6 class="mb-2">Keterangan Kategori Usaha:</h6>
+      <div class="d-flex flex-wrap justify-content-start align-items-center">
+        {% for kategori, warna in kategori_colors.items() %}
+        <div class="d-flex align-items-center mr-3 mb-2">
+          <span class="legend-color" style="background-color: {{ warna }}"></span>
+          <small>{{ kategori }}</small>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Regresi -->
+  {% if regresi_plot %}
+  <div class="card shadow-sm p-3 mt-4">
+    <h5 class="mb-3">Visualisasi Regresi Status Bangunan Usaha</h5>
+    <img src="data:image/png;base64,{{ regresi_plot }}" class="img-fluid rounded" alt="Regresi Status Bangunan">
+  </div>
+  <div class="card bg-light border-info shadow-sm p-3 mt-3 mb-4">
+    <h6 class="font-weight-bold mb-2">Keterangan Model Regresi</h6>
+    <ul class="list-unstyled small mb-0">
+      <li><strong>Y:</strong> Status Bangunan Usaha</li>
+      <li><strong>X:</strong> Latitude, Longitude, Elevation, Ortho Height</li>
+      <li>Model prediksi lokasi → status</li>
+      <li>Regresi linier sederhana</li>
+    </ul>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="alert alert-warning text-center mt-4">
+    Tidak ada data yang sesuai dengan filter.
+  </div>
+  {% endif %}
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  &copy; 2025 Kelurahan Tlogomas | Kontak: 0819812563 | Email: keltlogomas@gmail.com
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
